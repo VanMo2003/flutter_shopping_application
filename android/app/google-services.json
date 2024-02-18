@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "476530509918",
+    "project_id": "fir-test-65ec4",
+    "storage_bucket": "fir-test-65ec4.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:476530509918:android:ef22f9b6b811b61b090ccf",
+        "android_client_info": {
+          "package_name": "com.example.shopping_application"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBvy6N7QmQaGOwMTSRJPziaYqZs3MybmR0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
