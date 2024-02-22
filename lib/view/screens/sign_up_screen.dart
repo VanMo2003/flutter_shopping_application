@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:shopping_application/values/route_value.dart';
 import 'package:shopping_application/view/screens/login_screen.dart';
 
 import '../../values/text_style_value.dart';

@@ -1,7 +1,6 @@
 // ignore_for_file: constant_identifier_names, void_checks
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/material.dart';
 import 'package:shopping_application/models/cart_model.dart';
 
 const String USER_COLLECTION_REF = "users";
