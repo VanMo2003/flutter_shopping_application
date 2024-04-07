@@ -2,18 +2,19 @@ import 'dart:typed_data';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:shopping_application/models/cart_model.dart';
-import 'package:shopping_application/models/product_model.dart';
-import 'package:shopping_application/services/firebase/cart_firebase_service.dart';
-import 'package:shopping_application/values/asset_value.dart';
-import 'package:shopping_application/values/color_value.dart';
-import 'package:shopping_application/values/text_style_value.dart';
+
+import '../../models/cart_model.dart';
+import '../../models/product_model.dart';
+import '../../services/firebase/cart_firebase_service.dart';
+import '../../values/asset_value.dart';
+import '../../values/color_value.dart';
+import '../../values/text_style_value.dart';
 
 class DetailProductScreen extends StatefulWidget {
   const DetailProductScreen(
-      {super.key, required this.email, required this.productModel});
+      {super.key, required this.email, required this.product});
   final String email;
-  final ProductModel productModel;
+  final Product product;
   @override
   State<DetailProductScreen> createState() => _DetailProductScreenState();
 }
@@ -66,7 +67,7 @@ class _DetailProductScreenState extends State<DetailProductScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '${widget.productModel.title}',
+              '${widget.product.title}',
               style: TextStyleValue.h3,
               maxLines: 2,
             ),
@@ -81,14 +82,14 @@ class _DetailProductScreenState extends State<DetailProductScreen> {
             ),
             const SizedBox(height: 10),
             Text(
-              '${widget.productModel.price}',
+              '${widget.product.price}',
               style: TextStyleValue.h3.copyWith(
                 fontSize: 22,
               ),
             ),
             const SizedBox(height: 10),
             Text(
-              '${widget.productModel.description}',
+              '${widget.product.description}',
               style: TextStyleValue.h4.copyWith(
                 color: Colors.grey.shade600,
                 fontWeight: FontWeight.normal,
@@ -253,17 +254,10 @@ class _DetailProductScreenState extends State<DetailProductScreen> {
           decoration: const BoxDecoration(
             color: ColorValue.backgroundColor,
           ),
-          child: widget.productModel.images == null
-              ? const Center(
-                  child: Icon(
-                    Icons.image,
-                    size: 100,
-                  ),
-                )
-              : Image.network(
-                  '${widget.productModel.images![0]}',
-                  fit: BoxFit.cover,
-                ),
+          child: Image.network(
+            '${widget.product.images![0]}',
+            fit: BoxFit.cover,
+          ),
         )
       ],
     );
@@ -272,11 +266,11 @@ class _DetailProductScreenState extends State<DetailProductScreen> {
   void addProductToCart() async {
     final CartFirebaseService firebaseService =
         CartFirebaseService(email: widget.email);
-    CartModel cartModel = CartModel(
-      idProduct: widget.productModel.id!,
-      image: widget.productModel.images![0],
-      nameProduct: widget.productModel.title ?? '',
-      unitPrice: widget.productModel.price ?? 0.0,
+    Cart cartModel = Cart(
+      idProduct: widget.product.id!,
+      image: widget.product.images![0],
+      nameProduct: widget.product.title ?? '',
+      unitPrice: widget.product.price ?? 0.0,
       quantity: quantity,
       createOn: Timestamp.now(),
       updateOn: Timestamp.now(),
@@ -285,13 +279,9 @@ class _DetailProductScreenState extends State<DetailProductScreen> {
       isAddingProduct = true;
     });
     await firebaseService.addDataToCart(cartModel);
-    Future.delayed(
-      const Duration(milliseconds: 1000),
-      () {
-        setState(() {
-          isAddingProduct = false;
-        });
-      },
-    );
+
+    setState(() {
+      isAddingProduct = false;
+    });
   }
 }

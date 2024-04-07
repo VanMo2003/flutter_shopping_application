@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:shopping_application/values/color_value.dart';
-import 'package:shopping_application/values/asset_value.dart';
-import 'package:shopping_application/values/route_value.dart';
-import 'package:shopping_application/values/text_style_value.dart';
+import '../../values/asset_value.dart';
+import '../../values/color_value.dart';
+import '../../values/route_value.dart';
+import '../../values/text_style_value.dart';
 
-class SplashPage extends StatefulWidget {
-  const SplashPage({super.key});
+class SplashScreens extends StatefulWidget {
+  const SplashScreens({super.key});
 
   @override
-  State<SplashPage> createState() => _SplashPageState();
+  State<SplashScreens> createState() => _SplashScreensState();
 }
 
-class _SplashPageState extends State<SplashPage> {
+class _SplashScreensState extends State<SplashScreens> {
   @override
   void initState() {
     super.initState();

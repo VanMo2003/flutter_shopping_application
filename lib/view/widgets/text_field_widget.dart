@@ -9,6 +9,7 @@ class TextFieldWidget extends StatefulWidget {
   final String? labelText;
   final String? helperText;
   final FormFieldSetter<String>? onSaved;
+  final FormFieldSetter<String>? onChanged;
   final FormFieldValidator<String>? validator;
   final ValueChanged<String>? onFieldSubmitted;
   final TextInputType? inputType;
@@ -23,6 +24,7 @@ class TextFieldWidget extends StatefulWidget {
     this.labelText,
     this.helperText,
     this.onSaved,
+    this.onChanged,
     this.validator,
     this.onFieldSubmitted,
     this.inputType,
@@ -48,6 +50,7 @@ class _TextFieldWidgetState extends State<TextFieldWidget> {
         key: widget.fieldKey,
         obscureText: widget.isPasswordField == true ? _obscureText : false,
         onSaved: widget.onSaved,
+        onChanged: widget.onChanged,
         validator: widget.validator,
         onFieldSubmitted: widget.onFieldSubmitted,
         decoration: InputDecoration(
