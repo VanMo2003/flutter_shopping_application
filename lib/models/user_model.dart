@@ -1,4 +1,19 @@
-class UserModel {
+import 'package:momentum/momentum.dart';
+
+import '../controllers/user_controller.dart';
+
+class UserModel extends MomentumModel<UserController> {
+  final User? user;
+
+  const UserModel(UserController controller, {this.user}) : super(controller);
+
+  @override
+  void update({User? user}) {
+    UserModel(controller, user: user ?? this.user).updateMomentum();
+  }
+}
+
+class User {
   int? id;
   String? email;
   String? password;
@@ -8,7 +23,7 @@ class UserModel {
   String? creationAt;
   String? updatedAt;
 
-  UserModel({
+  User({
     this.id,
     this.email,
     this.password,
@@ -19,7 +34,7 @@ class UserModel {
     this.updatedAt,
   });
 
-  UserModel.fromJson(Map<String, dynamic> json) {
+  User.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     email = json['email'];
     password = json['password'];

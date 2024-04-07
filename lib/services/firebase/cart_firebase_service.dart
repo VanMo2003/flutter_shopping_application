@@ -1,10 +1,11 @@
 // ignore_for_file: constant_identifier_names, void_checks
-
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:shopping_application/models/cart_model.dart';
+import 'package:flutter/material.dart';
 
-const String USER_COLLECTION_REF = "users";
-const String CART_COLLECTION_REF = "carts";
+import '../../models/cart_model.dart';
+
+const String USER_COLLECTION_REF = "users_shop";
+const String CART_COLLECTION_REF = "carts_user";
 
 class CartFirebaseService {
   final _firestore = FirebaseFirestore.instance;
@@ -15,18 +16,17 @@ class CartFirebaseService {
         .collection(USER_COLLECTION_REF)
         .doc(email)
         .collection(CART_COLLECTION_REF)
-        .withConverter<CartModel>(
-          fromFirestore: (snapshot, options) =>
-              CartModel.fromJson(snapshot.data()!),
+        .withConverter<Cart>(
+          fromFirestore: (snapshot, options) => Cart.fromJson(snapshot.data()!),
           toFirestore: (value, options) => value.toJson(),
         );
   }
 
-  Stream<QuerySnapshot> getCartAll() {
-    return _cartRef.snapshots();
+  Future<List<QueryDocumentSnapshot<Object?>>> getCartAll() {
+    return _cartRef.snapshots().first.then((value) => value.docs);
   }
 
-  Future<void> addDataToCart(CartModel cartModelNew) async {
+  Future<void> addDataToCart(Cart cartModelNew) async {
     bool check = false;
     QuerySnapshot querySnapshot = await _firestore
         .collection(USER_COLLECTION_REF)
@@ -36,8 +36,7 @@ class CartFirebaseService {
 
     querySnapshot.docs.map(
       (e) {
-        CartModel cartModelOld =
-            CartModel.fromJson(e.data() as Map<String, Object?>);
+        Cart cartModelOld = Cart.fromJson(e.data() as Map<String, Object?>);
         String cartId = e.id;
         // deleteToCart(cartId);
         if (cartModelOld.idProduct == cartModelNew.idProduct) {
@@ -52,11 +51,12 @@ class CartFirebaseService {
       },
     ).toList();
     if (!check) {
+      debugPrint('cartRef : ${_cartRef.path}');
       _cartRef.add(cartModelNew);
     }
   }
 
-  void updateToCart(String cartId, CartModel cartMode) {
+  void updateToCart(String cartId, Cart cartMode) {
     _cartRef.doc(cartId).update(cartMode.toJson());
   }
 

@@ -42,6 +42,7 @@ dependencies:
   cloud_firestore: ^4.14.0
   intl: ^0.19.0
   json_serializable: ^6.7.1
+  momentum: ^2.2.1
 
 dev_dependencies:
   flutter_test:

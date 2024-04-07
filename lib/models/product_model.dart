@@ -1,4 +1,21 @@
-class ProductModel {
+import 'package:momentum/momentum.dart';
+
+import '../controllers/product_controller.dart';
+
+class ProductModel extends MomentumModel<ProductController> {
+  final List<Product>? products;
+
+  const ProductModel(ProductController controller, {this.products})
+      : super(controller);
+
+  @override
+  void update({List<Product>? products}) {
+    ProductModel(controller, products: products ?? this.products)
+        .updateMomentum();
+  }
+}
+
+class Product {
   int? id;
   String? title;
   double? price;
@@ -8,7 +25,7 @@ class ProductModel {
   String? updatedAt;
   Category? category;
 
-  ProductModel({
+  Product({
     this.id,
     this.title,
     this.price,
@@ -19,7 +36,7 @@ class ProductModel {
     this.category,
   });
 
-  ProductModel.fromJson(Map<String, dynamic> json) {
+  Product.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     title = json['title'];
     price = json['price'];

@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:shopping_application/models/product_model.dart';
-import 'package:shopping_application/models/user_model.dart';
-import 'package:shopping_application/view/screens/detail_product_screen.dart';
-import '../../../services/product_service.dart';
-import '../../../services/user_service.dart';
-import 'package:shopping_application/values/asset_value.dart';
-import 'package:shopping_application/values/color_value.dart';
-import 'package:shopping_application/values/route_value.dart';
-import 'package:shopping_application/values/text_style_value.dart';
-import 'package:shopping_application/view/widgets/dropdown_widget.dart';
-import 'package:shopping_application/view/widgets/text_field_widget.dart';
+import 'package:momentum/momentum.dart';
+
+import '../../controllers/product_controller.dart';
+import '../../controllers/user_controller.dart';
+import '../../models/product_model.dart';
+import '../../models/user_model.dart';
+import '../../values/asset_value.dart';
+import '../../values/color_value.dart';
+import '../../values/route_value.dart';
+import '../../values/text_style_value.dart';
+import '../widgets/text_field_widget.dart';
+import 'detail_product_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -20,28 +21,12 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  late Future<List<ProductModel>> productList;
-  late Future<UserModel> userModel;
   String? accessToken;
   String? email;
 
   @override
-  void initState() {
-    super.initState();
-
-    productList = ProductService.getAllProduct();
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    accessToken = ModalRoute.of(context)!.settings.arguments as String;
-    userModel = UserService.getUserWithSession(accessToken);
-
+    Momentum.controller<ProductController>(context).getAllProducts();
     return Scaffold(
       key: _scaffoldKey,
       drawer: drawer(),
@@ -79,7 +64,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     'Categories',
                     style: TextStyleValue.h3.copyWith(fontSize: 22),
                   ),
-                  const CategoriesDropDown(),
+                  // const CategoriesDropDown(),
                 ],
               ),
             ),
@@ -87,133 +72,141 @@ class _HomeScreenState extends State<HomeScreen> {
           Expanded(
             flex: 6,
             child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: FutureBuilder<List<ProductModel>>(
-                  future: productList,
-                  builder: (context, snapshot) {
-                    if (snapshot.hasData) {
-                      return GridView.builder(
-                        physics: const BouncingScrollPhysics(),
-                        itemCount: snapshot.data!.length,
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          mainAxisExtent: size.height * 0.31,
-                          crossAxisSpacing: 8,
-                          childAspectRatio: 0.8,
-                          mainAxisSpacing: 8,
-                        ),
-                        itemBuilder: (context, index) {
-                          return Padding(
-                            padding: index % 2 == 0
-                                ? const EdgeInsets.only(left: 8)
-                                : const EdgeInsets.only(right: 8),
-                            child: GestureDetector(
-                              onTap: () {
-                                ProductModel productModel = ProductModel(
-                                  id: snapshot.data![index].id,
-                                  title: snapshot.data![index].title,
-                                  description:
-                                      snapshot.data![index].description,
-                                  price: snapshot.data![index].price,
-                                  images: snapshot.data![index].images,
-                                );
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => DetailProductScreen(
-                                      email: '$email',
-                                      productModel: productModel,
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: MomentumBuilder(
+                controllers: const [ProductController],
+                builder: (context, snapshots) {
+                  var products = snapshots<ProductModel>().products;
+                  if (products == null) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (products.isEmpty) {
+                    return Center(
+                        child: Text(
+                      "Không tìm thấy sản phẩm",
+                      style: TextStyleValue.h4.copyWith(
+                        fontStyle: FontStyle.italic,
+                        fontSize: 18,
+                      ),
+                    ));
+                  } else {
+                    return GridView.builder(
+                      physics: const BouncingScrollPhysics(),
+                      itemCount: products.length,
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        mainAxisExtent: size.height * 0.31,
+                        crossAxisSpacing: 8,
+                        childAspectRatio: 0.8,
+                        mainAxisSpacing: 8,
+                      ),
+                      itemBuilder: (context, index) {
+                        return Padding(
+                          padding: index % 2 == 0
+                              ? const EdgeInsets.only(left: 8)
+                              : const EdgeInsets.only(right: 8),
+                          child: GestureDetector(
+                            onTap: () {
+                              Product product = Product(
+                                id: products[index].id,
+                                title: products[index].title,
+                                description: products[index].description,
+                                price: products[index].price,
+                                images: products[index].images,
+                              );
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => DetailProductScreen(
+                                    email: '$email',
+                                    product: product,
+                                  ),
+                                ),
+                              );
+                            },
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.8),
+                                borderRadius: BorderRadius.circular(12),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.1),
+                                    spreadRadius: 2,
+                                    blurRadius: 2,
+                                    offset: const Offset(
+                                      2,
+                                      2,
+                                    ), // changes position of shadow
+                                  ),
+                                ],
+                              ),
+                              child: Stack(
+                                children: [
+                                  Container(
+                                    height: size.height * 0.18,
+                                    width: double.infinity,
+                                    decoration: BoxDecoration(
+                                      color: ColorValue.backgroundColor,
+                                      borderRadius: BorderRadius.circular(12),
+                                      image: DecorationImage(
+                                        fit: BoxFit.cover,
+                                        image: NetworkImage(
+                                          '${products[index].images?.first}.jpeg',
+                                        ),
+                                      ),
                                     ),
                                   ),
-                                );
-                              },
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.8),
-                                  borderRadius: BorderRadius.circular(12),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.1),
-                                      spreadRadius: 2,
-                                      blurRadius: 2,
-                                      offset: const Offset(
-                                        2,
-                                        2,
-                                      ), // changes position of shadow
-                                    ),
-                                  ],
-                                ),
-                                child: Stack(
-                                  children: [
-                                    Container(
-                                      height: size.height * 0.18,
-                                      width: double.infinity,
-                                      decoration: BoxDecoration(
-                                        color: ColorValue.backgroundColor,
-                                        borderRadius: BorderRadius.circular(12),
-                                        image: DecorationImage(
-                                          fit: BoxFit.cover,
-                                          image: NetworkImage(
-                                            '${snapshot.data![index].images?.first}.jpeg',
-                                          ),
-                                        ),
+                                  Positioned(
+                                    width: size.width * 0.4,
+                                    top: size.height * 0.18 + 5,
+                                    left: 5,
+                                    child: Text(
+                                      products[index].title ?? 'title',
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyleValue.h4.copyWith(
+                                        fontSize: 18,
                                       ),
                                     ),
-                                    Positioned(
-                                      width: size.width * 0.4,
-                                      top: size.height * 0.18 + 5,
-                                      left: 5,
-                                      child: Text(
-                                        snapshot.data![index].title ?? 'title',
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyleValue.h4.copyWith(
-                                          fontSize: 18,
-                                        ),
+                                  ),
+                                  Positioned(
+                                    width: size.width * 0.5 - 20,
+                                    top: size.height * 0.18 + 30,
+                                    left: 5,
+                                    child: Text(
+                                      products[index].description ??
+                                          'description',
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyleValue.h4.copyWith(
+                                        color: Colors.grey,
+                                        fontStyle: FontStyle.italic,
+                                        fontSize: 14,
                                       ),
                                     ),
-                                    Positioned(
-                                      width: size.width * 0.5 - 20,
-                                      top: size.height * 0.18 + 30,
-                                      left: 5,
-                                      child: Text(
-                                        snapshot.data![index].description ??
-                                            'description',
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyleValue.h4.copyWith(
-                                          color: Colors.grey,
-                                          fontStyle: FontStyle.italic,
-                                          fontSize: 14,
-                                        ),
+                                  ),
+                                  Positioned(
+                                    bottom: 5,
+                                    right: 5,
+                                    child: Text(
+                                      '\$${products[index].price ?? '0.0'}',
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyleValue.h4.copyWith(
+                                        fontStyle: FontStyle.italic,
+                                        fontSize: 18,
                                       ),
                                     ),
-                                    Positioned(
-                                      bottom: 5,
-                                      right: 5,
-                                      child: Text(
-                                        '\$${snapshot.data![index].price ?? '0.0'}',
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyleValue.h4.copyWith(
-                                          fontStyle: FontStyle.italic,
-                                          fontSize: 18,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                                  ),
+                                ],
                               ),
                             ),
-                          );
-                        },
-                      );
-                    } else if (snapshot.hasError) {
-                      return Center(child: Text('${snapshot.error}'));
-                    }
-
-                    return const Center(child: CircularProgressIndicator());
-                  },
-                )),
+                          ),
+                        );
+                      },
+                    );
+                  }
+                },
+              ),
+            ),
           ),
         ],
       ),
@@ -229,30 +222,34 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           Expanded(
               flex: 3,
-              child: FutureBuilder(
-                future: userModel,
-                builder: (context, snapshot) {
-                  email = snapshot.data?.email;
+              child: MomentumBuilder(
+                controllers: const [UserController],
+                builder: (context, snapshots) {
+                  var user = snapshots<UserModel>().user!;
+                  email = user.email;
                   return ListTile(
                     leading: GestureDetector(
                       onTap: () => _scaffoldKey.currentState?.openDrawer(),
                       child: CircleAvatar(
                         radius: 24,
                         child: ClipOval(
-                          child: snapshot.data?.avatar == null
+                          child: user.avatar == null
                               ? const Icon(Icons.image)
-                              : Image.network('${snapshot.data!.avatar}'),
+                              : Image.network('${user.avatar}'),
                         ),
                       ),
                     ),
                     title: Text(
-                      snapshot.data?.name ?? 'Username',
-                      style: TextStyleValue.h3.copyWith(fontSize: 22),
+                      user.name ?? 'Username',
+                      style: Theme.of(context)
+                          .textTheme
+                          .titleLarge
+                          ?.copyWith(fontWeight: FontWeight.bold),
                     ),
                     subtitle: Text(
-                      snapshot.data?.email ?? 'example@mail.com',
-                      style: TextStyleValue.h4
-                          .copyWith(color: const Color(0xffBEC3C7)),
+                      user.email ?? 'example@mail.com',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontSize: 18, color: const Color(0xffBEC3C7)),
                     ),
                     contentPadding: const EdgeInsets.only(right: 0, left: 10),
                     trailing: SizedBox(
@@ -266,7 +263,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               Navigator.pushNamed(
                                 context,
                                 RouteValue.routeNameToCart,
-                                arguments: snapshot.data?.email,
+                                arguments: user.email,
                               );
                             },
                             child: Image.asset(
@@ -284,13 +281,19 @@ class _HomeScreenState extends State<HomeScreen> {
                   );
                 },
               )),
-          const Expanded(
+          Expanded(
             flex: 2,
             child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20),
+              padding: const EdgeInsets.symmetric(horizontal: 20),
               child: TextFieldWidget(
                 hintText: 'Search',
                 isSearchField: true,
+                onChanged: (newValue) {
+                  if (newValue != null) {
+                    Momentum.controller<ProductController>(context)
+                        .searchProduct(newValue);
+                  }
+                },
               ),
             ),
           ),
@@ -301,7 +304,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget drawer() {
     Size size = MediaQuery.of(context).size;
-
     return Column(
       children: [
         Container(
@@ -309,10 +311,12 @@ class _HomeScreenState extends State<HomeScreen> {
           width: size.width * 0.6,
           color: ColorValue.primaryColor,
           child: SafeArea(
-            child: FutureBuilder(
-              future: userModel,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
+            child: MomentumBuilder(
+              controllers: const [UserController],
+              builder: (context, snapshots) {
+                var user = snapshots<UserModel>().user;
+
+                if (user == null) {
                   return const Center(
                     child: CircularProgressIndicator(),
                   );
@@ -323,15 +327,15 @@ class _HomeScreenState extends State<HomeScreen> {
                     CircleAvatar(
                       radius: 50,
                       child: ClipOval(
-                        child: Image.network("${snapshot.data?.avatar}"),
+                        child: Image.network("${user.avatar}"),
                       ),
                     ),
                     Text(
-                      snapshot.data?.name ?? 'Username',
+                      user.name ?? 'Username',
                       style: TextStyleValue.h3.copyWith(fontSize: 22),
                     ),
                     Text(
-                      snapshot.data?.email ?? 'example@mail.com',
+                      user.email ?? 'example@mail.com',
                       style: TextStyleValue.h4
                           .copyWith(color: const Color(0xffBEC3C7)),
                     ),

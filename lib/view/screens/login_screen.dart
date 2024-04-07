@@ -1,10 +1,13 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:flutter/material.dart';
-import '../../../services/user_service.dart';
-import 'package:shopping_application/values/route_value.dart';
+
+import '../../controllers/loading_controller.dart';
+import '../../controllers/user_controller.dart';
+import '../../models/loading_model.dart';
 import '../../values/text_style_value.dart';
 import '../widgets/text_field_widget.dart';
+import 'package:momentum/momentum.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -18,7 +21,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
   final TextEditingController _passwordController = TextEditingController();
 
-  bool _isLoading = false;
   bool _isError = false;
   String? error;
 
@@ -60,7 +62,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 30),
                   GestureDetector(
                     onTap: () {
-                      _signIn();
+                      Momentum.controller<UserController>(context).login(
+                          context,
+                          _emailController.text,
+                          _passwordController.text);
                     },
                     child: Container(
                       height: size.height * 0.06,
@@ -84,9 +89,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       const Text("Don't have an account?"),
                       const SizedBox(width: 5),
                       GestureDetector(
-                        onTap: () async {
-                          loginToSignUp();
-                        },
+                        onTap: () async {},
                         child: const Text(
                           'SignUp',
                           style: TextStyle(
@@ -105,70 +108,22 @@ class _LoginScreenState extends State<LoginScreen> {
                 ],
               ),
             ),
-            if (_isLoading) ...[
-              Container(
-                color: Colors.white.withOpacity(0.4),
-              ),
-              const Center(child: CircularProgressIndicator())
-            ]
+            MomentumBuilder(
+              controllers: const [LoadingController],
+              builder: (context, snapshots) {
+                var isLoading = snapshots<LoadingModel>().isLoading;
+                if (isLoading ?? false) {
+                  return Container(
+                    color: Colors.white.withOpacity(0.4),
+                    child: const Center(child: CircularProgressIndicator()),
+                  );
+                }
+                return Container();
+              },
+            )
           ],
         ),
       ),
-    );
-  }
-
-  void _signIn() async {
-    setState(() {
-      _isLoading = true;
-      _isError = false;
-    });
-    String? email = _emailController.text;
-    String? password = _passwordController.text;
-
-    await Future.delayed(
-      const Duration(seconds: 1),
-      () async {
-        _isLoading = false;
-        if (email != '' && password != '') {
-          var result = await UserService.login(email, password);
-          if (result != null) {
-            Navigator.pushNamed(
-              context,
-              RouteValue.routeNameToHome,
-              arguments: result.accessToken,
-            );
-          } else {
-            error = "Email or password is not correct";
-            _isError = true;
-            setState(() {});
-          }
-        } else {
-          setState(() {
-            error = "Please enter complete information";
-            _isError = true;
-          });
-        }
-      },
-    );
-  }
-
-  void loginToSignUp() async {
-    setState(() {
-      _isLoading = true;
-    });
-
-    await Future.delayed(
-      const Duration(milliseconds: 500),
-      () {
-        setState(() {
-          _isLoading = false;
-        });
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          RouteValue.routeNameToSignUp,
-          (route) => false,
-        );
-      },
     );
   }
 }

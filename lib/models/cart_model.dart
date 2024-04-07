@@ -1,6 +1,26 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:momentum/momentum.dart';
 
-class CartModel {
+import '../controllers/cart_controller.dart';
+
+class CartModel extends MomentumModel<CartController> {
+  final List<QueryDocumentSnapshot<Object?>>? carts;
+  final double? totalMoney;
+
+  const CartModel(CartController controller, {this.carts, this.totalMoney})
+      : super(controller);
+
+  @override
+  void update(
+      {List<QueryDocumentSnapshot<Object?>>? carts, double? totalMoney}) {
+    CartModel(controller,
+            carts: carts ?? this.carts,
+            totalMoney: totalMoney ?? this.totalMoney)
+        .updateMomentum();
+  }
+}
+
+class Cart {
   int idProduct;
   String image;
   String nameProduct;
@@ -9,7 +29,7 @@ class CartModel {
   Timestamp createOn;
   Timestamp updateOn;
 
-  CartModel({
+  Cart({
     required this.idProduct,
     required this.image,
     required this.nameProduct,
@@ -19,7 +39,7 @@ class CartModel {
     required this.updateOn,
   });
 
-  CartModel.fromJson(Map<String, Object?> json)
+  Cart.fromJson(Map<String, Object?> json)
       : this(
           idProduct: json['idProduct'] as int,
           image: json['image'] as String,
@@ -41,7 +61,7 @@ class CartModel {
     };
   }
 
-  CartModel copyWith({
+  Cart copyWith({
     int? idProduct,
     String? image,
     String? nameProduct,
@@ -50,7 +70,7 @@ class CartModel {
     Timestamp? createOn,
     Timestamp? updateOn,
   }) {
-    return CartModel(
+    return Cart(
       idProduct: idProduct ?? this.idProduct,
       image: image ?? this.image,
       nameProduct: nameProduct ?? this.nameProduct,
